@@ -1,0 +1,51 @@
+name: PR
+
+on:
+  pull_request:
+    branches: [main]
+
+env:
+  CI: 'true'
+  NX_DAEMON: 'true'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  pull-requests: write
+  issues: write
+  statuses: write
+  checks: write
+  contents: write
+  actions: read
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Use PNPM 10.x
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - name: Use Node.js 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'pnpm'
+      - name: Install Node.js Dependencies
+        run: pnpm i --frozen-lockfile --prefer-offline
+      - name: Set git identity
+        run: |-
+          git config user.name "release"
+          git config user.email "release@github.com"
+      - uses: nrwl/nx-set-shas@v4
+      - name: Build
+        run: pnpm nx run-many --target build --all --output-style=stream
+      - name: Check for mutations
+        run: git diff --ignore-space-at-eol --exit-code

@@ -1,8 +1,22 @@
 {
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
   "namedInputs": {
-    "default": ["{projectRoot}/**/*", "sharedGlobals"],
-    "production": ["default"],
+    "default": [
+      "{projectRoot}/**/*",
+      "sharedGlobals",
+      {
+        "dependentTasksOutputFiles": "**/*",
+        "transitive": true
+      }
+    ],
+    "production": [
+      "default",
+      "!{projectRoot}/.eslintrc.json",
+      "!{projectRoot}/eslint.config.mjs",
+      "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
+      "!{projectRoot}/tsconfig.spec.json"
+    ],
+    "projectDependencies": ["{projectRoot}/package.json", "sharedGlobals"],
     "sharedGlobals": []
   },
   "plugins": [
@@ -13,17 +27,93 @@
           "targetName": "typecheck"
         },
         "build": {
-          "targetName": "build",
+          "targetName": "compile",
           "configName": "tsconfig.lib.json",
           "buildDepsName": "build-deps",
           "watchDepsName": "watch-deps"
         }
       }
+    },
+    {
+      "plugin": "@nx/eslint/plugin",
+      "options": {
+        "targetName": "lint"
+      }
     }
   ],
   "targetDefaults": {
     "compile": {
-      "syncGenerators": ["@nx/js:typescript-sync", "@aws/nx-plugin:ts#sync"]
+      "cache": true,
+      "syncGenerators": ["@nx/js:typescript-sync", "@aws/nx-plugin:ts#sync"],
+      "inputs": ["default"]
+    },
+    "nx-release-publish": {
+      "options": {
+        "packageRoot": "dist/packages/trpc2openapi"
+      }
+    },
+    "@nx/eslint:lint": {
+      "cache": true,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/.eslintrc.json",
+        "{workspaceRoot}/.eslintignore",
+        "{workspaceRoot}/eslint.config.mjs"
+      ],
+      "syncGenerators": ["@aws/nx-plugin:license#sync"]
+    },
+    "@nx/js:tsc": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"]
+    },
+    "@nx/vitest:test": {
+      "cache": true,
+      "inputs": ["default", "^production"],
+      "configurations": {
+        "update-snapshot": {
+          "args": "--update"
+        }
+      }
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "inputs": ["default"]
+    },
+    "lint": {
+      "cache": true,
+      "configurations": {
+        "fix": {
+          "fix": true
+        }
+      },
+      "inputs": [
+        "default",
+        "{workspaceRoot}/eslint.config.mjs",
+        "{projectRoot}/eslint.config.mjs"
+      ]
+    },
+    "build": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["default"]
+    }
+  },
+  "release": {
+    "projects": ["trpc2openapi"],
+    "version": {
+      "manifestRootsToUpdate": ["dist/packages/trpc2openapi"],
+      "specifierSource": "conventional-commits",
+      "currentVersionResolver": "git-tag"
+    },
+    "changelog": {
+      "workspaceChangelog": {
+        "file": false,
+        "createRelease": "github"
+      }
+    },
+    "conventionalCommits": {
+      "useCommitScope": false
     }
   }
 }

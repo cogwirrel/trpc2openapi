@@ -1,0 +1,33 @@
+{
+  "name": "trpc2openapi",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/trpc2openapi/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "compile": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/trpc2openapi",
+        "main": "packages/trpc2openapi/src/index.ts",
+        "tsConfig": "packages/trpc2openapi/tsconfig.lib.json",
+        "assets": [
+          "packages/trpc2openapi/*.md",
+          "packages/trpc2openapi/LICENSE"
+        ]
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "configurations": {
+        "dev": {
+          "fix": true
+        }
+      }
+    },
+    "build": {
+      "dependsOn": ["compile", "lint", "test"]
+    }
+  }
+}

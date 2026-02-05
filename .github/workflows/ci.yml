@@ -1,0 +1,106 @@
+name: CI
+
+concurrency:
+  group: 'ci'
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  CI: 'true'
+  NX_DAEMON: 'true'
+
+permissions:
+  pull-requests: write
+  issues: write
+  statuses: write
+  checks: write
+  contents: write
+  actions: read
+  id-token: write
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Use PNPM 10.x
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - name: Use Node.js 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'pnpm'
+      - name: Install Node.js Dependencies
+        run: pnpm i --frozen-lockfile --prefer-offline
+      - name: Set git identity
+        run: |-
+          git config user.name "release"
+          git config user.email "release@github.com"
+      - uses: nrwl/nx-set-shas@v4
+      - name: Build
+        run: pnpm nx run-many --target build --all --output-style=stream
+      - name: Check for mutations
+        run: git diff --ignore-space-at-eol --exit-code
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifact
+          path: dist
+  release:
+    name: Release
+    needs: [build]
+    runs-on: ubuntu-latest
+    outputs:
+      latest_commit: ${{ steps.git_remote.outputs.latest_commit }}
+      skip_release: ${{ steps.should_skip_release.outputs.skip_release }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifact
+          path: dist
+      - name: Use PNPM 10.x
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - name: Use Node.js 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'pnpm'
+      - name: Install Node.js Dependencies
+        run: pnpm i --frozen-lockfile --prefer-offline
+      - name: Set git identity
+        run: |-
+          git config user.name "release"
+          git config user.email "release@github.com"
+      - uses: nrwl/nx-set-shas@v4
+      - name: Check for new commits
+        id: git_remote
+        run: echo "latest_commit=$(git ls-remote origin -h ${{ github.ref }} | cut -f1)" >> $GITHUB_OUTPUT
+      - name: Should skip release
+        id: should_skip_release
+        run: echo "skip_release=$(git log $(git describe --tags --abbrev=0)..HEAD --oneline | grep -qE 'feat\(?.*\)?:|fix\(?.*\)?:|revert\(?.*\)?:|perf\(?.*\)?:' && echo false || echo true)" >> $GITHUB_OUTPUT
+      - name: Release
+        if: ${{ steps.should_skip_release.outputs.skip_release != 'true' && github.event_name == 'push' && steps.git_remote.outputs.latest_commit == github.sha }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_DIST_TAG: latest
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HUSKY: '0'
+        run: |
+          pnpm nx release --yes

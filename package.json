@@ -3,23 +3,52 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
+    "prepare": "husky || true",
     "build:all": "nx run-many --target build --all",
     "affected:all": "nx affected --target build"
   },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
   "private": true,
   "dependencies": {
-    "@aws/nx-plugin": "0.71.0"
+    "@aws/nx-plugin": "0.71.0",
+    "@trpc/server": "^11.9.0",
+    "openapi-types": "^12.1.3",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "@eslint/js": "^9.8.0",
+    "@nx/eslint": "22.4.5",
+    "@nx/eslint-plugin": "22.4.5",
     "@nx/js": "22.4.5",
+    "@nx/vitest": "22.4.5",
     "@nx/workspace": "22.4.5",
     "@swc-node/register": "~1.9.1",
     "@swc/core": "~1.5.7",
     "@swc/helpers": "~0.5.11",
+    "@types/node": "20.19.9",
+    "@vitest/coverage-v8": "^4.0.0",
+    "commitizen": "^4.3.1",
+    "cz-conventional-changelog": "^3.3.0",
+    "eslint": "^9.8.0",
+    "eslint-config-prettier": "^10.0.0",
+    "eslint-plugin-prettier": "5.5.5",
+    "husky": "^9.1.7",
+    "jsdom": "^27.1.0",
+    "jsonc-eslint-parser": "2.4.2",
+    "lint-staged": "^15.5.2",
     "nx": "22.4.3",
-    "prettier": "~3.6.2",
+    "prettier": "3.8.1",
     "tslib": "^2.3.0",
-    "typescript": "~5.9.2"
+    "typescript": "~5.9.2",
+    "typescript-eslint": "^8.40.0",
+    "vite": "^7.0.0",
+    "vitest": "^4.0.8"
   },
   "type": "module"
 }

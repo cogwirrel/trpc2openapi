@@ -16,6 +16,11 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "es2022",
-    "customConditions": ["@trpc2openapi/source"]
+    "customConditions": ["@trpc2openapi/source"],
+    "baseUrl": ".",
+    "rootDir": ".",
+    "paths": {
+      ":trpc2openapi/trpc2openapi": ["packages/trpc2openapi/src/index.ts"]
+    }
   }
 }
