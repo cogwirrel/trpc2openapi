@@ -23,6 +23,35 @@ const PROCEDURE_TYPE_HTTP_METHOD_MAP: Record<string, string | undefined> = {
 
 /**
  * Convert a tRPC router to an OpenAPI 3.1 specification document.
+ *
+ * @param options - Configuration options for generating the OpenAPI spec
+ * @param options.apiTitle - The title of the API (used in OpenAPI info.title)
+ * @param options.apiVersion - The version of the API (used in OpenAPI info.version)
+ * @param options.basePath - The base path prefix for all tRPC endpoints (e.g., '/trpc')
+ * @param options.router - The tRPC router to convert to OpenAPI
+ * @returns An OpenAPI 3.1 Document object
+ *
+ * @example
+ * ```typescript
+ * import { initTRPC } from '@trpc/server';
+ * import { z } from 'zod';
+ * import { trpc2OpenApi } from 'trpc2openapi';
+ *
+ * const t = initTRPC.create();
+ * const appRouter = t.router({
+ *   greeting: t.procedure
+ *     .input(z.object({ name: z.string() }))
+ *     .output(z.object({ message: z.string() }))
+ *     .query(({ input }) => ({ message: `Hello, ${input.name}!` })),
+ * });
+ *
+ * const spec = trpc2OpenApi({
+ *   apiTitle: 'My API',
+ *   apiVersion: '1.0.0',
+ *   basePath: '/trpc',
+ *   router: appRouter,
+ * });
+ * ```
  */
 export const trpc2OpenApi = ({
   apiTitle,
