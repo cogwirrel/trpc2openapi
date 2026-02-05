@@ -4,7 +4,8 @@
   "license": "MIT",
   "scripts": {
     "prepare": "husky || true",
-    "build:all": "nx run-many --target build --all",
+    "build": "nx run-many --target build",
+    "lint": "nx run-many --target lint --fix",
     "affected:all": "nx affected --target build"
   },
   "config": {

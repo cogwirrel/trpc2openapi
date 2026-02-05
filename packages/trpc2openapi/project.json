@@ -9,13 +9,10 @@
       "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/packages/trpc2openapi",
-        "main": "packages/trpc2openapi/src/index.ts",
-        "tsConfig": "packages/trpc2openapi/tsconfig.lib.json",
-        "assets": [
-          "packages/trpc2openapi/*.md",
-          "packages/trpc2openapi/LICENSE"
-        ]
+        "outputPath": "dist/{projectRoot}",
+        "main": "{projectRoot}/src/index.ts",
+        "tsConfig": "{projectRoot}/tsconfig.lib.json",
+        "assets": ["{projectRoot}/*.md", "{projectRoot}/LICENSE"]
       }
     },
     "lint": {
@@ -24,6 +21,13 @@
         "dev": {
           "fix": true
         }
+      }
+    },
+    "test": {
+      "executor": "@nx/vitest:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "options": {
+        "reportsDirectory": "../../coverage/{projectRoot}"
       }
     },
     "build": {
