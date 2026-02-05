@@ -1,6 +1,6 @@
 # trpc2openapi
 
-Yet another tRPC to OpenAPI converter — because I couldn't find one that supported **tRPC 11** and **Zod 4**.
+This is another tRPC to OpenAPI converter — because I couldn't find one that supported **tRPC 11** and **Zod 4**.
 
 This library generates an OpenAPI 3.1 specification that conforms to the [tRPC RPC specification](https://trpc.io/docs/rpc), meaning the generated spec describes how tRPC handles HTTP requests and responses.
 
